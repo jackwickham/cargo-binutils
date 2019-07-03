@@ -78,8 +78,12 @@ pub struct Context {
 
 impl Context {
     /* Constructors */
-    fn new(target_flag: Option<&str>) -> Result<Self, failure::Error> {
-        let cwd = env::current_dir()?;
+    fn new(target_flag: Option<&str>, project: Option<&str>) -> Result<Self, failure::Error> {
+        let mut cwd = env::current_dir()?;
+        if let Some(project) = project {
+            // TODO: we need to search for the project
+            cwd = cwd.join(project);
+        }
 
         #[allow(unreachable_patterns)]
         let project = match Project::query(cwd) {
@@ -190,6 +194,13 @@ To see all the flags the proxied tool accepts run `cargo-{} -- -help`.{}",
                 .long("verbose")
                 .short("v")
                 .help("Use verbose output"),
+        )
+        .arg(
+            Arg::with_name("project")
+                .long("project")
+                .short("p")
+                .value_name("NAME")
+                .help("The project within the workspace to target")
         )
         .arg(Arg::with_name("--").short("-").hidden_short_help(true))
         .arg(Arg::with_name("args").multiple(true))
@@ -325,7 +336,7 @@ To see all the flags the proxied tool accepts run `cargo-{} -- -help`.{}",
         tool_args.extend(args);
     }
 
-    let ctxt = Context::new(target_flag)?;
+    let ctxt = Context::new(target_flag, matches.value_of("project"))?;
 
     let mut lltool = ctxt.tool(tool, &ctxt.target);
 
