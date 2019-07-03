@@ -78,11 +78,10 @@ pub struct Context {
 
 impl Context {
     /* Constructors */
-    fn new(target_flag: Option<&str>, project: Option<&str>) -> Result<Self, failure::Error> {
+    fn new(target_flag: Option<&str>, project_path: Option<&str>) -> Result<Self, failure::Error> {
         let mut cwd = env::current_dir()?;
-        if let Some(project) = project {
-            // TODO: we need to search for the project
-            cwd = cwd.join(project);
+        if let Some(project_path) = project_path {
+            cwd = cwd.join(project_path);
         }
 
         #[allow(unreachable_patterns)]
@@ -200,7 +199,7 @@ To see all the flags the proxied tool accepts run `cargo-{} -- -help`.{}",
                 .long("project")
                 .short("p")
                 .value_name("NAME")
-                .help("The project within the workspace to target")
+                .help("The relative path to the project")
         )
         .arg(Arg::with_name("--").short("-").hidden_short_help(true))
         .arg(Arg::with_name("args").multiple(true))
